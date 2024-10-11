@@ -1,0 +1,14 @@
+
+/.idea
+/cmake-build-debug/.cmake/api/v1/query
+*.json
+*.ninja
+*.cmake
+*.txt
+*.bin
+*.exe
+*.c
+*.log
+*.yaml
+*.check_cache
+cmake-build-debug/CMakeFiles/3.28.1/CompilerIdCXX/CMakeCXXCompilerId.cpp
