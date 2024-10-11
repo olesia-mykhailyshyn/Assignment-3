@@ -12,3 +12,4 @@
 *.yaml
 *.check_cache
 cmake-build-debug/CMakeFiles/3.28.1/CompilerIdCXX/CMakeCXXCompilerId.cpp
+/cmake-build-debug
