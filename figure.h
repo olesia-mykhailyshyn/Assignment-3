@@ -20,6 +20,9 @@ public:
     [[nodiscard]] virtual bool isOutOfBounds(int boardWidth, int boardHeight) const = 0;
     static bool isPositionOutOfBounds(int x, int y, int boardWidth, int boardHeight);
 
+    void setColor(ColorName newColor) { color = Color(newColor); }
+
+
     int x;
     int y;
     Color color;

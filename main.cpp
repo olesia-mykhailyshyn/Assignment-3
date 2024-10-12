@@ -7,7 +7,8 @@ int main() {
     std::string input;
 
     while (true) {
-        std::cout << "\nEnter command (draw/list/shapes/add/select/remove/edit/paint/move/undo/clear/save/load/exit): " << std::endl;
+        std::cout << "\nEnter command (draw/list/shapes/add/select/remove/edit/paint/move/undo/clear/save/load/exit): "
+                  << std::endl;
         std::getline(std::cin, input);
 
         std::istringstream iss(input);
@@ -31,7 +32,8 @@ int main() {
 
             if (shapeName == "rectangle" || shapeName == "line") {
                 if (!(iss >> param2)) {
-                    std::cout << "Invalid parameters for " << shapeName << ". Needs an additional parameter." << std::endl;
+                    std::cout << "Invalid parameters for " << shapeName << ". Needs an additional parameter."
+                              << std::endl;
                     continue;
                 }
             }
@@ -44,7 +46,7 @@ int main() {
             board.undo();
         }
         else if (command == "clear") {
-            board.clear(board.getFilePath());
+            board.clear();
         }
         else if (command == "save") {
             board.save(board.getFilePath());
@@ -73,7 +75,6 @@ int main() {
                 std::cout << "Invalid select command. Please provide either an ID or coordinates." << std::endl;
             }
         }
-
         else if (command == "remove") {
             board.remove();
         }

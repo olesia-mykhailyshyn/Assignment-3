@@ -19,7 +19,7 @@ void Board::print() const {
 
     for (int row = 0; row < boardHeight; ++row) {
         std::cout << std::setw(2) << row << "|";
-        for (char c : grid[row]) {
+        for (const std::string& c : grid[row]) {
             std::cout << " " << c << " ";
         }
         std::cout << "|\n";
@@ -31,6 +31,7 @@ void Board::print() const {
     }
     std::cout << "+\n";
 }
+
 
 std::vector<std::shared_ptr<Figure>> Board::getFigures() const {
     std::vector<std::shared_ptr<Figure>> result;
@@ -103,7 +104,7 @@ void Board::load(const std::string& filePath) {
     }
 
     figures.clear();
-    grid.assign(boardHeight, std::vector<char>(boardWidth, ' '));
+    grid.assign(boardHeight, std::vector<std::string>(boardWidth, " "));
 
     std::string shapeName;
     bool loadSuccessful = true;
@@ -204,7 +205,7 @@ bool Board::isDuplicate(const std::shared_ptr<Figure>& figure) const {
 }
 
 void Board::draw() {
-    grid.assign(boardHeight, std::vector<char>(boardWidth, ' '));
+    grid.assign(boardHeight, std::vector<std::string>(boardWidth, " "));
 
     for (const std::shared_ptr<Figure>& figure : getFigures()) {
         figure->draw(*this);
@@ -273,17 +274,22 @@ void Board::save(const std::string& filePath) const {
     }
 }
 
-void Board::clear(const std::string& filePath) {
-    if (figures.empty()) {
-        std::cout << "There are no figures. Clear command cannot be performed." << std::endl;
-    }
-    else {
-        figures.clear();
-        std::ofstream ofs;
-        ofs.open(filePath, std::ofstream::out | std::ofstream::trunc);
-        ofs.close();
-        std::cout << "All shapes are removed from the board. File is empty as well." << std::endl;
-    }
+//void Board::clear(const std::string& filePath) {
+//    if (figures.empty()) {
+//        std::cout << "There are no figures. Clear command cannot be performed." << std::endl;
+//    }
+//    else {
+//        figures.clear();
+//        std::ofstream ofs;
+//        ofs.open(filePath, std::ofstream::out | std::ofstream::trunc);
+//        ofs.close();
+//        std::cout << "All shapes are removed from the board. File is empty as well." << std::endl;
+//    }
+//}
+
+void Board::clear() {
+    grid.assign(boardHeight, std::vector<std::string>(boardWidth, " "));
+
 }
 
 std::string Board::getFilePath() const {
@@ -374,4 +380,18 @@ void Board::move(int newX, int newY) {
     figure->x = newX;
     figure->y = newY;
     std::cout << "Shape [" << selectedID << "] moved to (" << newX << ", " << newY << ")." << std::endl;
+}
+
+void Board::updateFigureColor(int figureID, const std::string& colorStr) {
+    if (figureID < 0 || figureID >= figures.size()) {
+        std::cout << "Invalid figure ID." << std::endl;
+        return;
+    }
+    ColorName colorName = Color::fromString(colorStr);
+    if (colorName == ColorName::Invalid) {
+        std::cout << "Invalid color input." << std::endl;
+        return;
+    }
+    figures[figureID].second->setColor(colorName);
+    std::cout << "Color updated." << std::endl;
 }

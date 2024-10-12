@@ -11,7 +11,6 @@ public:
     explicit Color(ColorName name = ColorName::Reset);
     [[nodiscard]] std::string getName() const;
     static ColorName fromString(const std::string& colorStr);
-    static std::string getAnsiCode(ColorName name);
 
     ColorName name;
 };

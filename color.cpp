@@ -1,9 +1,14 @@
 #include "color.h"
 
 const std::unordered_map<ColorName, std::string> ansiCodeMap = {
-        {ColorName::Red, "\033[31m"}, {ColorName::Green, "\033[32m"}, {ColorName::Blue, "\033[34m"},
-        {ColorName::Yellow, "\033[33m"}, {ColorName::Cyan, "\033[36m"}, {ColorName::Magenta, "\033[35m"},
-        {ColorName::White, "\033[37m"}, {ColorName::Reset, "\033[0m"}
+        {ColorName::Red, "\033[31m"},
+        {ColorName::Green, "\033[32m"},
+        {ColorName::Blue, "\033[34m"},
+        {ColorName::Yellow, "\033[33m"},
+        {ColorName::Cyan, "\033[36m"},
+        {ColorName::Magenta, "\033[35m"},
+        {ColorName::White, "\033[37m"},
+        {ColorName::Reset, "\033[0m"}
 };
 
 Color::Color(ColorName name) : name(name) {}
@@ -24,9 +29,14 @@ std::string Color::getName() const {
 
 ColorName Color::fromString(const std::string& colorStr) {
     static const std::unordered_map<std::string, ColorName> colors = {
-            {"red", ColorName::Red}, {"green", ColorName::Green}, {"blue", ColorName::Blue},
-            {"yellow", ColorName::Yellow}, {"cyan", ColorName::Cyan}, {"magenta", ColorName::Magenta},
-            {"white", ColorName::White}, {"reset", ColorName::Reset}
+            {"red", ColorName::Red},
+            {"green", ColorName::Green},
+            {"blue", ColorName::Blue},
+            {"yellow", ColorName::Yellow},
+            {"cyan", ColorName::Cyan},
+            {"magenta", ColorName::Magenta},
+            {"white", ColorName::White},
+            {"reset", ColorName::Reset}
     };
     auto it = colors.find(colorStr);
     return it != colors.end() ? it->second : ColorName::Invalid;
