@@ -22,10 +22,10 @@ public:
     void load(const std::string& filePath);
     [[nodiscard]] std::string getFilePath() const;
 
-    void select(int ID);
-    void select(const std::vector<int>& coordinates) const;
+    void select(int ID) ;
+    void select(int x, int y) ;
     void remove();
-    void edit(int ID, const std::string& shapeName, int x, int y, int parameter1, int parameter2);
+    void edit(int x, int y, int parameter1, int parameter2);
     void paint(const std::string& colorStr);
     void move(int newX, int newY);
 

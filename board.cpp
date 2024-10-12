@@ -2,7 +2,6 @@
 #include "fstream"
 #include <iostream>
 #include <iomanip>
-#include "algorithm"
 #include "enums.h"
 
 void Board::print() const {
@@ -243,7 +242,6 @@ void Board::shapes() {
     std::cout << "Usage Example: add fill red circle 5 5 3 - This command creates a filled red circle at position (5, 5) with a radius of 3." << std::endl;
 }
 
-
 void Board::undo() {
     if (figures.empty()) {
         std::cout << "There are no figures. Undo command cannot be performed." << std::endl;
@@ -293,47 +291,35 @@ std::string Board::getFilePath() const {
 }
 
 //Assignment-3
-void Board::select(int ID) {
-    if (ID < 0 || ID >= figures.size()) {
-        std::cout << "Shape was not found" << std::endl;
-    }
-    else {
-        std::shared_ptr<Figure> selectedFigure = figures[ID].second;
-        if (selectedFigure != nullptr) {
-            selectedID = ID;
-            std::cout << "< " << selectedFigure->getInfo() << " >" << std::endl;
-        }
-        else {
-            std::cout << "Shape was not found" << std::endl;
-        }
+void Board::select(int ID)  {
+    if (ID >= 0 && ID < figures.size()) {
+        selectedID = ID;
+        std::shared_ptr<Figure> selectedFigure = figures[selectedID].second;
+        std::cout << "Shape [" << selectedID << "] selected: " << selectedFigure->getInfo() << std::endl;
+    } else {
+        std::cout << "Shape with ID " << ID << " not found." << std::endl;
+        selectedID = -1;
     }
 }
 
-void Board::select(const std::vector<int>& coordinates) const {
-    if (coordinates.size() != 2) {
-        std::cout << "Invalid coordinates. Please provide exactly two coordinates." << std::endl;
-        return;
-    }
-
-    int x = coordinates[0];
-    int y = coordinates[1];
+void Board::select(int x, int y)  {
     bool found = false;
-
-    for (const auto& figurePair : figures) {
-        std::shared_ptr<Figure> figure = figurePair.second;
-        if (figure != nullptr) {
-            if (!figure->isOutOfBounds(boardWidth, boardHeight) && figure->x == x && figure->y == y) {
-                std::cout << "< " << figure->getInfo() << " >" << std::endl;
-                found = true;
-                break;
-            }
+    for (int i = 0; i < figures.size(); ++i) {
+        auto& figure = figures[i].second;
+        if (figure != nullptr && figure->x == x && figure->y == y) {
+            selectedID = i;
+            std::cout << "Shape [" << selectedID << "] at (" << x << ", " << y << ") selected: " << figure->getInfo() << std::endl;
+            found = true;
+            break;
         }
     }
 
     if (!found) {
-        std::cout << "< shape was not found >" << std::endl;
+        std::cout << "No shape found at (" << x << ", " << y << ")." << std::endl;
+        selectedID = -1;
     }
 }
+
 
 void Board::remove() {
     if (selectedID == -1) {
@@ -341,99 +327,24 @@ void Board::remove() {
         return;
     }
 
-    auto it = std::find_if(figures.begin(), figures.end(), [this](const std::pair<int, std::shared_ptr<Figure>>& pair) {
-        return pair.first == selectedID;
-    });
-
-    if (it != figures.end()) {
-        std::cout << "< [" << it->first << "] " << it->second->getInfo() << " removed >" << std::endl;
-        figures.erase(it);
-        selectedID = -1;
-    }
-    else {
-        std::cout << "Error: Selected shape not found in the list." << std::endl;
-    }
+    figures.erase(figures.begin() + selectedID);
+    std::cout << "Shape [" << selectedID << "] removed." << std::endl;
+    selectedID = -1;
 }
 
-void Board::edit(int ID, const std::string& shapeName, int x, int y, int parameter1, int parameter2) {
-    if (ID < 0 || ID >= figures.size()) {
-        std::cout << "< error: invalid shape ID >" << std::endl;
+
+void Board::edit(int x, int y, int param1, int param2) {
+    if (selectedID == -1) {
+        std::cout << "No shape is currently selected. Please select a shape first." << std::endl;
         return;
     }
 
-    auto it = std::find_if(figures.begin(), figures.end(), [this, ID](const std::pair<int, std::shared_ptr<Figure>>& pair) {
-        return pair.first == ID;
-    });
-
-    if (it == figures.end() || !it->second) {
-        std::cout << "< error: no shape found with ID " << ID << " >" << std::endl;
-        return;
-    }
-
-    std::shared_ptr<Figure> &figure = it->second;
-
-    if (shapeName == "triangle") {
-        auto triangle = dynamic_cast<Triangle*>(figure.get());
-        if (triangle && parameter1 > 0) {
-            triangle->height = parameter1;
-            triangle->x = x;
-            triangle->y = y;
-        }
-        else {
-            std::cout << "< error: invalid arguments for triangle >" << std::endl;
-            return;
-        }
-    }
-    else if (shapeName == "rectangle") {
-        auto rectangle = dynamic_cast<Rectangle*>(figure.get());
-        if (rectangle && parameter1 > 0 && parameter2 > 0) {
-            rectangle->width = parameter1;
-            rectangle->height = parameter2;
-            rectangle->x = x;
-            rectangle->y = y;
-        }
-        else {
-            std::cout << "< error: invalid arguments for rectangle >" << std::endl;
-            return;
-        }
-    }
-    else if (shapeName == "circle") {
-        auto circle = dynamic_cast<Circle*>(figure.get());
-        if (circle && parameter1 > 0) {
-            circle->radius = parameter1;
-            circle->x = x;
-            circle->y = y;
-        }
-        else {
-            std::cout << "< error: invalid arguments for circle >" << std::endl;
-            return;
-        }
-    }
-    else if (shapeName == "line") {
-        auto line = dynamic_cast<Line*>(figure.get());
-        if (line) {
-            line->x = x;
-            line->y = y;
-            line->x2 = parameter1;
-            line->y2 = parameter2;
-        }
-        else {
-            std::cout << "< error: invalid arguments for line >" << std::endl;
-            return;
-        }
-    }
-    else {
-        std::cout << "< error: shape type does not match any editable type >" << std::endl;
-        return;
-    }
-
-    if (figure->isOutOfBounds(boardWidth, boardHeight)) {
-        std::cout << "< error: shape will go out of the board >" << std::endl;
-        return;
-    }
-
-    std::cout << "< [" << ID << "] " << shapeName << " modified successfully >" << std::endl;
+    auto& figure = figures[selectedID].second;
+    figure->x = x;
+    figure->y = y;
+    std::cout << "Shape [" << selectedID << "] edited." << std::endl;
 }
+
 
 
 void Board::paint(const std::string& colorStr) {
@@ -442,26 +353,15 @@ void Board::paint(const std::string& colorStr) {
         return;
     }
 
-    Color newColor;
-    if (colorStr == "red")        newColor = Color(ColorName::Red);
-    else if (colorStr == "green") newColor = Color(ColorName::Green);
-    else if (colorStr == "blue")  newColor = Color(ColorName::Blue);
-    else if (colorStr == "yellow")newColor = Color(ColorName::Yellow);
-    else if (colorStr == "cyan")  newColor = Color(ColorName::Cyan);
-    else if (colorStr == "magenta")newColor = Color(ColorName::Magenta);
-    else                          newColor = Color(ColorName::Reset);
-
-    auto it = std::find_if(figures.begin(), figures.end(), [this](const std::pair<int, std::shared_ptr<Figure>>& pair) {
-        return pair.first == selectedID;
-    });
-
-    if (it != figures.end()) {
-        it->second->color = newColor;
-        std::cout << "< [" << it->first << "] " << it->second->getInfo() << " " << newColor.getName() << " >" << std::endl;
+    ColorName colorName = Color::fromString(colorStr);
+    if (colorName == ColorName::Invalid) {
+        std::cout << "Invalid color specified." << std::endl;
+        return;
     }
-    else {
-        std::cout << "Error: Selected shape not found in the list." << std::endl;
-    }
+    Color newColor(colorName);
+
+    figures[selectedID].second->color = newColor;
+    std::cout << "Shape [" << selectedID << "] painted " << newColor.getName() << "." << std::endl;
 }
 
 void Board::move(int newX, int newY) {
@@ -470,22 +370,8 @@ void Board::move(int newX, int newY) {
         return;
     }
 
-    auto it = std::find_if(figures.begin(), figures.end(), [this](const std::pair<int, std::shared_ptr<Figure>>& pair) {
-        return pair.first == selectedID;
-    });
-
-    if (it != figures.end()) {
-        if (Figure::isPositionOutOfBounds(newX, newY, boardWidth, boardHeight)) {
-            std::cout << "< error: shape cannot be moved outside the board >" << std::endl;
-            return;
-        }
-
-        it->second->x = newX;
-        it->second->y = newY;
-
-        std::cout << "< [" << it->first << "] " << it->second->getInfo() << " moved >" << std::endl;
-    }
-    else {
-        std::cout << "Error: Selected shape not found in the list." << std::endl;
-    }
+    auto& figure = figures[selectedID].second;
+    figure->x = newX;
+    figure->y = newY;
+    std::cout << "Shape [" << selectedID << "] moved to (" << newX << ", " << newY << ")." << std::endl;
 }

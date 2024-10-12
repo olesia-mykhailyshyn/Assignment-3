@@ -7,7 +7,7 @@ int main() {
     std::string input;
 
     while (true) {
-        std::cout << "\nEnter command (draw/list/shapes/add/undo/clear/save/load/exit): ";
+        std::cout << "\nEnter command (draw/list/shapes/add/select/remove/edit/paint/move/undo/clear/save/load/exit): " << std::endl;
         std::getline(std::cin, input);
 
         std::istringstream iss(input);
@@ -57,17 +57,23 @@ int main() {
             break;
         }
         else if (command == "select") {
-            if (iss.peek() >= '0' && iss.peek() <= '9') {
-                int ID;
-                iss >> ID;
-                board.select(ID);
+            int firstParam;
+            if (iss >> firstParam) {
+                if (iss.peek() == ',' || iss.peek() == ' ') {
+                    int x = firstParam;
+                    int y;
+                    iss >> y;
+                    board.select(x, y);
+                }
+                else {
+                    board.select(firstParam);
+                }
             }
             else {
-                int x, y;
-                iss >> x >> y;
-                board.select({x, y});
+                std::cout << "Invalid select command. Please provide either an ID or coordinates." << std::endl;
             }
         }
+
         else if (command == "remove") {
             board.remove();
         }
@@ -78,7 +84,7 @@ int main() {
             if (shapeName == "rectangle" || shapeName == "line") {
                 iss >> param2;
             }
-            board.edit(ID, shapeName, x, y, param1, param2);
+            board.edit(x, y, param1, param2);
         }
         else if (command == "paint") {
             std::string color;

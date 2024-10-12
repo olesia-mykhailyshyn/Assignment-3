@@ -47,7 +47,6 @@ void Triangle::draw(Board& board) {
     std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
     char colorChar = color.getName()[0];
 
-    // Draw from top vertex to base
     for (int i = 0; i < height; ++i) {
         int leftMost = x - i;
         int rightMost = x + i;
