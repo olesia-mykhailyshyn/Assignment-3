@@ -7,44 +7,10 @@ bool Figure::isPositionOutOfBounds(int x, int y, int boardWidth, int boardHeight
     return (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight);
 }
 
-//void Triangle::draw(Board& board) {
-//
-//    if (height <= 0) {
-//        return;
-//    }
-//    std::string colorCode = ColorFormatter::getAnsiCode(color);
-//    std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
-//
-//    for (int i = 0; i < height; ++i) {
-//        int leftMost = x - i;
-//        int rightMost = x + i;
-//        int posY = y + i;
-//
-//        if (posY >= 0 && posY < board.boardHeight) {
-//            if (leftMost >= 0 && leftMost < board.boardWidth) {
-//                board.grid[posY][leftMost] = '*';
-//            }
-//            if (rightMost >= 0 && rightMost < board.boardWidth) {
-//                board.grid[posY][rightMost] = '*';
-//            }
-//        }
-//    }
-//
-//    int baseY = y + height - 1;
-//    if (baseY >= 0 && baseY < board.boardHeight) {
-//        for (int j = -height + 1; j < height; ++j) {
-//            int baseX = x + j;
-//            if (baseX >= 0 && baseX < board.boardWidth) {
-//                board.grid[baseY][baseX] = '*';
-//            }
-//        }
-//    }
-//}
-
 void Triangle::draw(Board& board) {
     std::string colorCode = ColorFormatter::getAnsiCode(color);
     std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
-    //char colorChar = color.getName()[0];
+    std::string colorChar = std::string(1, color.getName()[0]);
 
     for (int i = 0; i < height; ++i) {
         int leftMost = x - i;
@@ -53,11 +19,12 @@ void Triangle::draw(Board& board) {
 
         for (int posX = leftMost; posX <= rightMost; ++posX) {
             if (posY >= 0 && posY < board.boardHeight && posX >= 0 && posX < board.boardWidth) {
+                std::string content = colorCode + colorChar + resetCode;
                 if (fillMode == FillMode::Frame && (posX == leftMost || posX == rightMost || i == height - 1)) {
-                    board.grid[posY][posX] = colorCode + '*' + resetCode;
+                    board.grid[posY][posX] = content;
                 }
                 else if (fillMode == FillMode::Fill) {
-                    board.grid[posY][posX] = colorCode + '*' + resetCode;
+                    board.grid[posY][posX] = content;
                 }
             }
         }
@@ -76,38 +43,20 @@ std::string Triangle::getSaveFormat() const {
     return "Triangle " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(height) + " 0";
 }
 
-//void Rectangle::draw(Board& board) {
-//    std::string colorCode = ColorFormatter::getAnsiCode(color);
-//    std::string resetCode = "\033[0m";
-//
-//    int right = x + width - 1;
-//    int bottom = y + height - 1;
-//
-//    for (int row = y; row <= bottom; ++row) {
-//        for (int col = x; col <= right; ++col) {
-//            if (row >= 0 && row < board.boardHeight && col >= 0 && col < board.boardWidth) {
-//                std::string content = colorCode + '*' + resetCode;
-//                if (fillMode == FillMode::Frame && (row == y || row == bottom || col == x || col == right)) {
-//                    board.grid[row][col] = content;
-//                } else if (fillMode == FillMode::Fill) {
-//                    board.grid[row][col] = content;
-//                }
-//            }
-//        }
-//    }
-//}
-
 void Rectangle::draw(Board& board) {
     std::string colorCode = ColorFormatter::getAnsiCode(color);
     std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
-    std::string filledCell = colorCode + '*' + resetCode;
+
+    char colorChar = color.getName()[0];
+    std::string filledCell = colorCode + colorChar + resetCode;
 
     for (int row = y; row < y + height; ++row) {
         for (int col = x; col < x + width; ++col) {
             if (row >= 0 && row < board.boardHeight && col >= 0 && col < board.boardWidth) {
                 if (fillMode == FillMode::Frame && (row == y || row == y + height - 1 || col == x || col == x + width - 1)) {
                     board.grid[row][col] = filledCell;
-                } else if (fillMode == FillMode::Fill) {
+                }
+                else if (fillMode == FillMode::Fill) {
                     board.grid[row][col] = filledCell;
                 }
             }
@@ -130,6 +79,8 @@ std::string Rectangle::getSaveFormat() const {
 void Circle::draw(Board& board) {
     std::string colorCode = ColorFormatter::getAnsiCode(color);
     std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
+    char colorChar = color.getName()[0];
+    std::string filledCell = colorCode + colorChar + resetCode;
 
     for (int i = -radius; i <= radius; ++i) {
         for (int j = -radius; j <= radius; ++j) {
@@ -139,7 +90,7 @@ void Circle::draw(Board& board) {
                 int drawX = x + j;
                 int drawY = y + i;
                 if (drawX >= 0 && drawX < board.boardWidth && drawY >= 0 && drawY < board.boardHeight) {
-                    board.grid[drawY][drawX] = colorCode + '*' + resetCode;
+                    board.grid[drawY][drawX] = filledCell;
                 }
             }
         }
@@ -161,6 +112,8 @@ std::string Circle::getSaveFormat() const {
 void Line::draw(Board& board) {
     std::string colorCode = ColorFormatter::getAnsiCode(color);
     std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
+    char colorChar = color.getName()[0];
+    std::string lineCell = colorCode + colorChar + resetCode;
 
     int x1 = x;
     int y1 = y;
@@ -177,7 +130,7 @@ void Line::draw(Board& board) {
 
     while (true) {
         if (x1 >= 0 && x1 < board.boardWidth && y1 >= 0 && y1 < board.boardHeight) {
-            board.grid[y1][x1] = colorCode + '*' + resetCode;
+            board.grid[y1][x1] = lineCell;
         }
 
         if (x1 == x2 && y1 == y2) {
