@@ -22,7 +22,6 @@ public:
 
     void setColor(ColorName newColor) { color = Color(newColor); }
 
-
     int x;
     int y;
     Color color;

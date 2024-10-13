@@ -7,7 +7,7 @@ int main() {
     std::string input;
 
     while (true) {
-        std::cout << "\nEnter command (draw/list/shapes/add/select/remove/edit/paint/move/undo/clear/save/load/exit): "
+        std::cout << "\nEnter command (draw/list/shapes/add/select/remove/edit/paint/move/clear/save/load/exit): "
                   << std::endl;
         std::getline(std::cin, input);
 
@@ -42,11 +42,11 @@ int main() {
 
             board.add(shapeName, color, x, y, param1, param2, fillMode);
         }
-        else if (command == "undo") {
-            board.undo();
-        }
+//        else if (command == "undo") {
+//            board.undo();
+//        }
         else if (command == "clear") {
-            board.clear();
+            board.clear(board.getFilePath());
         }
         else if (command == "save") {
             board.save(board.getFilePath());
@@ -79,14 +79,8 @@ int main() {
             board.remove();
         }
         else if (command == "edit") {
-            int ID, x, y, param1, param2 = 0;
-            std::string shapeName;
-            iss >> ID >> shapeName >> x >> y >> param1;
-            if (shapeName == "rectangle" || shapeName == "line") {
-                iss >> param2;
-            }
-            board.edit(x, y, param1, param2);
         }
+
         else if (command == "paint") {
             std::string color;
             iss >> color;

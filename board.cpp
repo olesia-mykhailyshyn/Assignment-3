@@ -77,7 +77,7 @@ void Board::add(const std::string& shapeName, const std::string& colorStr, int x
     }
     else {
         figures.emplace_back(shapeIDCounter, newFigure);
-        std::cout << "< [" << shapeIDCounter << "] " << shapeName << " " << color.getName()
+        std::cout << "< [" << shapeIDCounter - 1 << "] " << shapeName << " " << color.getName()
                   << " " << x << " " << y << " " << parameter1;
 
         if (shapeName == "rectangle" || shapeName == "line") {
@@ -243,15 +243,15 @@ void Board::shapes() {
     std::cout << "Usage Example: add fill red circle 5 5 3 - This command creates a filled red circle at position (5, 5) with a radius of 3." << std::endl;
 }
 
-void Board::undo() {
-    if (figures.empty()) {
-        std::cout << "There are no figures. Undo command cannot be performed." << std::endl;
-    }
-    else {
-        figures.pop_back();
-        std::cout << "The last added figure was deleted." << std::endl;
-    }
-}
+//void Board::undo() {
+//    if (figures.empty()) {
+//        std::cout << "There are no figures. Undo command cannot be performed." << std::endl;
+//    }
+//    else {
+//        figures.pop_back();
+//        std::cout << "The last added figure was deleted." << std::endl;
+//    }
+//}
 
 void Board::save(const std::string& filePath) const {
     std::ofstream myFile(filePath, std::ios::out);
@@ -274,22 +274,17 @@ void Board::save(const std::string& filePath) const {
     }
 }
 
-//void Board::clear(const std::string& filePath) {
-//    if (figures.empty()) {
-//        std::cout << "There are no figures. Clear command cannot be performed." << std::endl;
-//    }
-//    else {
-//        figures.clear();
-//        std::ofstream ofs;
-//        ofs.open(filePath, std::ofstream::out | std::ofstream::trunc);
-//        ofs.close();
-//        std::cout << "All shapes are removed from the board. File is empty as well." << std::endl;
-//    }
-//}
-
-void Board::clear() {
-    grid.assign(boardHeight, std::vector<std::string>(boardWidth, " "));
-
+void Board::clear(const std::string& filePath) {
+    if (figures.empty()) {
+        std::cout << "There are no figures. Clear command cannot be performed." << std::endl;
+    }
+    else {
+        figures.clear();
+        std::ofstream ofs;
+        ofs.open(filePath, std::ofstream::out | std::ofstream::trunc);
+        ofs.close();
+        std::cout << "All shapes are removed from the board. File is empty as well." << std::endl;
+    }
 }
 
 std::string Board::getFilePath() const {
@@ -326,7 +321,6 @@ void Board::select(int x, int y)  {
     }
 }
 
-
 void Board::remove() {
     if (selectedID == -1) {
         std::cout << "No shape is currently selected. Please select a shape first." << std::endl;
@@ -335,23 +329,40 @@ void Board::remove() {
 
     figures.erase(figures.begin() + selectedID);
     std::cout << "Shape [" << selectedID << "] removed." << std::endl;
+
+    for (int i = selectedID; i < figures.size(); ++i) {
+        figures[i].first = i;
+    }
+
     selectedID = -1;
 }
 
-
-void Board::edit(int x, int y, int param1, int param2) {
+void Board::edit(int x, int y, int parameter1, int parameter2, const std::string& colorStr, const std::string& fillModeStr) {
     if (selectedID == -1) {
         std::cout << "No shape is currently selected. Please select a shape first." << std::endl;
         return;
     }
 
     auto& figure = figures[selectedID].second;
+
     figure->x = x;
     figure->y = y;
-    std::cout << "Shape [" << selectedID << "] edited." << std::endl;
+    if (auto rect = dynamic_cast<Rectangle*>(figure.get())) {
+        rect->width = parameter1;
+        rect->height = parameter2;
+    } else if (auto circ = dynamic_cast<Circle*>(figure.get())) {
+        circ->radius = parameter1;
+    }
+
+    ColorName colorName = Color::fromString(colorStr);
+    if (colorName != ColorName::Invalid) {
+        figure->color = Color(colorName);
+    }
+
+    figure->fillMode = (fillModeStr == "fill") ? FillMode::Fill : FillMode::Frame;
+
+    std::cout << "Shape [" << selectedID << "] edited: New properties set." << std::endl;
 }
-
-
 
 void Board::paint(const std::string& colorStr) {
     if (selectedID == -1) {
@@ -380,18 +391,4 @@ void Board::move(int newX, int newY) {
     figure->x = newX;
     figure->y = newY;
     std::cout << "Shape [" << selectedID << "] moved to (" << newX << ", " << newY << ")." << std::endl;
-}
-
-void Board::updateFigureColor(int figureID, const std::string& colorStr) {
-    if (figureID < 0 || figureID >= figures.size()) {
-        std::cout << "Invalid figure ID." << std::endl;
-        return;
-    }
-    ColorName colorName = Color::fromString(colorStr);
-    if (colorName == ColorName::Invalid) {
-        std::cout << "Invalid color input." << std::endl;
-        return;
-    }
-    figures[figureID].second->setColor(colorName);
-    std::cout << "Color updated." << std::endl;
 }
