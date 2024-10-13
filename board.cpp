@@ -35,7 +35,8 @@ void Board::print() const {
 
 std::vector<std::shared_ptr<Figure>> Board::getFigures() const {
     std::vector<std::shared_ptr<Figure>> result;
-    for (const auto& figurePair : figures) {
+    result.reserve(figures.size());
+for (const auto& figurePair : figures) {
         result.push_back(figurePair.second);
     }
     return result;
@@ -153,7 +154,7 @@ void Board::load(const std::string& filePath) {
         }
 
         if (!isDuplicate(newFigure)) {
-            figures.push_back(std::make_pair(shapeIDCounter, newFigure));
+            figures.emplace_back(shapeIDCounter, newFigure);
         }
         else {
             std::cout << "Error: Duplicate figure found in file. Aborting load." << std::endl;

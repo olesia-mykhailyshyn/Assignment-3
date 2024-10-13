@@ -12,7 +12,7 @@ const std::unordered_map<std::string, CommandType> commandMap = {
         {"draw", CommandType::Draw},
         {"list", CommandType::List},
         {"shapes", CommandType::Shapes},
-        {"undo", CommandType::Undo},
+        //{"undo", CommandType::Undo},
         {"clear", CommandType::Clear},
         {"save", CommandType::Save},
         {"load", CommandType::Load},

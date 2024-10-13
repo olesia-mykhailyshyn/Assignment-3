@@ -15,7 +15,7 @@ enum class CommandType {
     Draw,
     List,
     Shapes,
-    Undo,
+    //Undo,
     Clear,
     Save,
     Load,
