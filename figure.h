@@ -22,6 +22,10 @@ public:
 
     void setColor(ColorName newColor) { color = Color(newColor); }
 
+    [[nodiscard]] virtual std::string getShapeType() const = 0;
+    [[nodiscard]] virtual int getParam1() const = 0;
+    [[nodiscard]] virtual int getParam2() const { return 0; }
+
     int x;
     int y;
     Color color;
@@ -38,6 +42,9 @@ public:
     [[nodiscard]] std::string getSaveFormat() const override;
     [[nodiscard]] bool isOutOfBounds(int boardWidth, int boardHeight) const override;
 
+    [[nodiscard]] std::string getShapeType() const override { return "triangle"; }
+    [[nodiscard]] int getParam1() const override { return height; }
+
     int height;
 };
 
@@ -50,6 +57,10 @@ public:
     [[nodiscard]] std::string getInfo() const override;
     [[nodiscard]] std::string getSaveFormat() const override;
     [[nodiscard]] bool isOutOfBounds(int boardWidth, int boardHeight) const override;
+
+    [[nodiscard]] std::string getShapeType() const override { return "rectangle"; }
+    [[nodiscard]] int getParam1() const override { return width; }
+    [[nodiscard]] int getParam2() const override { return height; }
 
     int width, height;
 };
@@ -64,6 +75,9 @@ public:
     [[nodiscard]] std::string getSaveFormat() const override;
     [[nodiscard]] bool isOutOfBounds(int boardWidth, int boardHeight) const override;
 
+    [[nodiscard]] std::string getShapeType() const override { return "circle"; }
+    [[nodiscard]] int getParam1() const override { return radius; }
+
     int radius;
 };
 
@@ -76,6 +90,10 @@ public:
     [[nodiscard]] std::string getInfo() const override;
     [[nodiscard]] std::string getSaveFormat() const override;
     [[nodiscard]] bool isOutOfBounds(int boardWidth, int boardHeight) const override;
+
+    [[nodiscard]] std::string getShapeType() const override { return "line"; }
+    [[nodiscard]] int getParam1() const override { return x2; }
+    [[nodiscard]] int getParam2() const override { return y2; }
 
     int x2, y2;
 };

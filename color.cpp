@@ -1,4 +1,5 @@
 #include "color.h"
+#include "algorithm"
 
 const std::unordered_map<ColorName, std::string> ansiCodeMap = {
         {ColorName::Red, "\033[31m"},
@@ -38,6 +39,9 @@ ColorName Color::fromString(const std::string& colorStr) {
             {"white", ColorName::White},
             {"reset", ColorName::Reset}
     };
+    std::string lowerColorStr;
+    std::transform(colorStr.begin(), colorStr.end(), std::back_inserter(lowerColorStr),
+                   [](unsigned char c){ return std::tolower(c); });
     auto it = colors.find(colorStr);
     return it != colors.end() ? it->second : ColorName::Invalid;
 }

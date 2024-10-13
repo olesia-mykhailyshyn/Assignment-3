@@ -90,7 +90,6 @@ int main() {
 
             board.edit(x, y, param1, param2, color, fillModeStr);
         }
-
         else if (command == "paint") {
             std::string color;
             iss >> color;

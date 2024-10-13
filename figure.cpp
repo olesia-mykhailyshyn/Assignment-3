@@ -146,7 +146,6 @@ void Circle::draw(Board& board) {
     }
 }
 
-
 bool Circle::isOutOfBounds(int boardWidth, int boardHeight) const {
     return radius <= 0 || (x + radius < 0) || (x - radius >= boardWidth) || (y + radius < 0) || (y - radius >= boardHeight);
 }
@@ -198,7 +197,6 @@ void Line::draw(Board& board) {
         }
     }
 }
-
 
 bool Line::isOutOfBounds(int boardWidth, int boardHeight) const {
     return (x < 0 && x2 < 0) || (y < 0 && y2 < 0) || (x >= boardWidth && x2 >= boardWidth) || (y >= boardHeight && y2 >= boardHeight);

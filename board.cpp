@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include "enums.h"
+#include "algorithm"
 
 void Board::print() const {
     std::cout << "   ";
@@ -31,7 +32,6 @@ void Board::print() const {
     }
     std::cout << "+\n";
 }
-
 
 std::vector<std::shared_ptr<Figure>> Board::getFigures() const {
     std::vector<std::shared_ptr<Figure>> result;
@@ -77,14 +77,12 @@ void Board::add(const std::string& shapeName, const std::string& colorStr, int x
     }
     else {
         figures.emplace_back(shapeIDCounter, newFigure);
-        std::cout << "< [" << shapeIDCounter << "] " << shapeName << " " << color.getName()
+        std::cout << "[" << shapeIDCounter << "] " << shapeName << " " << color.getName()
                   << " " << x << " " << y << " " << parameter1;
 
         if (shapeName == "rectangle" || shapeName == "line") {
             std::cout << " " << parameter2;
         }
-
-        std::cout << " >" << std::endl;
 
         ++shapeIDCounter;
     }
@@ -102,69 +100,48 @@ void Board::load(const std::string& filePath) {
         input.close();
         return;
     }
-
     figures.clear();
+
+    std::vector<std::pair<int, std::shared_ptr<Figure>>> tempFigures;
+    std::vector<std::vector<std::string>> tempGrid = grid;
     grid.assign(boardHeight, std::vector<std::string>(boardWidth, " "));
 
-    std::string shapeName;
+    int id, x, y, param1, param2;
+    std::string fillModeStr, colorStr, shapeType;
     bool loadSuccessful = true;
-    int id;
-    std::string shapeType, colorStr, fillModeStr;
-    int x, y, param1, param2;
 
     while (input >> id >> fillModeStr >> colorStr >> shapeType >> x >> y >> param1) {
         FillMode fillMode = (fillModeStr == "fill") ? FillMode::Fill : FillMode::Frame;
-        Color color;
-        if (colorStr == "red")  {
-            color = Color(ColorName::Red);
-        }
-        else if (colorStr == "green") {
-            color = Color(ColorName::Green);
-        }
-        else if (colorStr == "blue") {
-            color = Color(ColorName::Blue);
-        }
-        else if (colorStr == "yellow") {
-            color = Color(ColorName::Yellow);
-        }
-        else if (colorStr == "cyan")  {
-            color = Color(ColorName::Cyan);
-        }
-        else if (colorStr == "magenta") {
-            color = Color(ColorName::Magenta);
-        }
-        else {
-            color = Color(ColorName::Reset);
-        }
-
-        if (!(input >> x >> y >> param1)) {
+        ColorName colorName = Color::fromString(colorStr);
+        if (colorName == ColorName::Invalid) {
+            std::cout << "Invalid color specified: " << colorStr << std::endl;
             loadSuccessful = false;
             break;
         }
+        Color color(colorName);
+        std::shared_ptr<Figure> newFigure = nullptr;
 
-        if (shapeName == "Rectangle" || shapeName == "Line") {
+        if (shapeType == "triangle") {
+            newFigure = std::make_shared<Triangle>(x, y, param1, color, fillMode);
+        }
+        else if (shapeType == "rectangle" || shapeType == "line") {
             if (!(input >> param2)) {
+                std::cout << "Missing parameters for shape " << shapeType << std::endl;
                 loadSuccessful = false;
                 break;
             }
+            if (shapeType == "rectangle") {
+                newFigure = std::make_shared<Rectangle>(x, y, param1, param2, color, fillMode);
+            }
+            else {
+                newFigure = std::make_shared<Line>(x, y, param1, param2, color, fillMode);
+            }
         }
-
-        std::shared_ptr<Figure> newFigure = nullptr;
-
-        if (shapeName == "Triangle") {
-            newFigure = std::make_shared<Triangle>(x, y, param1, color, fillMode);
-        }
-        else if (shapeName == "Rectangle") {
-            newFigure = std::make_shared<Rectangle>(x, y, param1, param2, color, fillMode);
-        }
-        else if (shapeName == "Circle") {
+        else if (shapeType == "circle") {
             newFigure = std::make_shared<Circle>(x, y, param1, color, fillMode);
         }
-        else if (shapeName == "Line") {
-            newFigure = std::make_shared<Line>(x, y, param1, param2, color, fillMode);
-        }
         else {
-            std::cout << "Error: Invalid shape type found in file. Aborting load." << std::endl;
+            std::cout << "Error: Invalid shape type " << shapeType << " found in file. Aborting load." << std::endl;
             loadSuccessful = false;
             break;
         }
@@ -176,28 +153,37 @@ void Board::load(const std::string& filePath) {
         }
 
         if (!isDuplicate(newFigure)) {
-            figures.emplace_back(shapeIDCounter++, newFigure);
+            figures.push_back(std::make_pair(shapeIDCounter, newFigure));
         }
         else {
             std::cout << "Error: Duplicate figure found in file. Aborting load." << std::endl;
             loadSuccessful = false;
             break;
         }
+
+        tempFigures.emplace_back(id, newFigure);
     }
 
     input.close();
 
     if (loadSuccessful) {
+        figures.swap(tempFigures);
         std::cout << "Figures loaded successfully from " << filePath << std::endl;
-    }
-    else {
-        std::cout << "Invalid data found in file: " << filePath << ". Aborting load." << std::endl;
+    } else {
+        grid.swap(tempGrid);
+        std::cout << "Failed to load file: " << filePath << ". Aborting load due to errors." << std::endl;
     }
 }
 
 bool Board::isDuplicate(const std::shared_ptr<Figure>& figure) const {
-    for (const std::shared_ptr<Figure>& existingFigure : getFigures()) {
-        if (figure->getSaveFormat() == existingFigure->getSaveFormat()) {
+    for (const auto& existingFigure : figures) {
+        if (figure->getShapeType() == existingFigure.second->getShapeType() &&
+            figure->x == existingFigure.second->x &&
+            figure->y == existingFigure.second->y &&
+            figure->getParam1() == existingFigure.second->getParam1() &&
+            figure->getParam2() == existingFigure.second->getParam2() &&
+            figure->color.getName() == existingFigure.second->color.getName() &&
+            figure->fillMode == existingFigure.second->fillMode) {
             return true;
         }
     }
@@ -238,7 +224,6 @@ void Board::shapes() {
     std::cout << "> rectangle [x, y, width, height]" << std::endl;
     std::cout << "> triangle [x, y, height]" << std::endl;
     std::cout << "> line [x1, y1, x2, y2]" << std::endl;
-    std::cout << "You can specify a color for any shape by adding the color name before the shape parameters." << std::endl;
     std::cout << "Available colors: Red, Green, Blue, Yellow, Cyan, Magenta, White, Reset (default)." << std::endl;
     std::cout << "Usage Example: add fill red circle 5 5 3 - This command creates a filled red circle at position (5, 5) with a radius of 3." << std::endl;
 }
@@ -258,21 +243,28 @@ void Board::save(const std::string& filePath) const {
     if (myFile.is_open()) {
         if (figures.empty()) {
             std::cout << "There are no figures. An empty file will be saved." << std::endl;
-        }
-        else {
+        } else {
             for (const auto& figurePair : figures) {
-                int id = figurePair.first;
                 const auto& figure = figurePair.second;
-                if (figure != nullptr) {
-                    // Save the ID with the figure
-                    myFile << id << " " << figure->getSaveFormat() << std::endl;
+                std::string colorName = figure->color.getName();
+                std::transform(colorName.begin(), colorName.end(), colorName.begin(), ::tolower);
+                myFile << figurePair.first << " "
+                       << (figure->fillMode == FillMode::Fill ? "fill" : "frame") << " "
+                       << colorName << " "
+                       << figure->getShapeType() << " "
+                       << figure->x << " " << figure->y << " "
+                       << figure->getParam1();
+
+                if (figure->getShapeType() == "rectangle" || figure->getShapeType() == "line") {
+                    myFile << " " << figure->getParam2();
                 }
+
+                myFile << std::endl;
             }
             std::cout << "Figures saved to " << filePath << std::endl;
         }
         myFile.close();
-    }
-    else {
+    } else {
         std::cout << "Could not open file " << filePath << " for writing." << std::endl;
     }
 }
