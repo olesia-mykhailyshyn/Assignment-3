@@ -55,7 +55,8 @@ void Triangle::draw(Board& board) {
             if (posY >= 0 && posY < board.boardHeight && posX >= 0 && posX < board.boardWidth) {
                 if (fillMode == FillMode::Frame && (posX == leftMost || posX == rightMost || i == height - 1)) {
                     board.grid[posY][posX] = colorCode + '*' + resetCode;
-                } else if (fillMode == FillMode::Fill) {
+                }
+                else if (fillMode == FillMode::Fill) {
                     board.grid[posY][posX] = colorCode + '*' + resetCode;
                 }
             }
@@ -129,7 +130,6 @@ std::string Rectangle::getSaveFormat() const {
 void Circle::draw(Board& board) {
     std::string colorCode = ColorFormatter::getAnsiCode(color);
     std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
-    char colorChar = color.getName()[0];
 
     for (int i = -radius; i <= radius; ++i) {
         for (int j = -radius; j <= radius; ++j) {
@@ -139,12 +139,13 @@ void Circle::draw(Board& board) {
                 int drawX = x + j;
                 int drawY = y + i;
                 if (drawX >= 0 && drawX < board.boardWidth && drawY >= 0 && drawY < board.boardHeight) {
-                    board.grid[drawY][drawX] = colorChar;
+                    board.grid[drawY][drawX] = colorCode + '*' + resetCode;
                 }
             }
         }
     }
 }
+
 
 bool Circle::isOutOfBounds(int boardWidth, int boardHeight) const {
     return radius <= 0 || (x + radius < 0) || (x - radius >= boardWidth) || (y + radius < 0) || (y - radius >= boardHeight);
@@ -159,9 +160,9 @@ std::string Circle::getSaveFormat() const {
 }
 
 void Line::draw(Board& board) {
-
     std::string colorCode = ColorFormatter::getAnsiCode(color);
     std::string resetCode = ColorFormatter::getAnsiCode(Color(ColorName::Reset));
+
     int x1 = x;
     int y1 = y;
     int x2 = this->x2;
@@ -177,7 +178,7 @@ void Line::draw(Board& board) {
 
     while (true) {
         if (x1 >= 0 && x1 < board.boardWidth && y1 >= 0 && y1 < board.boardHeight) {
-            board.grid[y1][x1] = '*';
+            board.grid[y1][x1] = colorCode + '*' + resetCode;
         }
 
         if (x1 == x2 && y1 == y2) {
@@ -197,6 +198,7 @@ void Line::draw(Board& board) {
         }
     }
 }
+
 
 bool Line::isOutOfBounds(int boardWidth, int boardHeight) const {
     return (x < 0 && x2 < 0) || (y < 0 && y2 < 0) || (x >= boardWidth && x2 >= boardWidth) || (y >= boardHeight && y2 >= boardHeight);

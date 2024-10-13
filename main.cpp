@@ -79,6 +79,16 @@ int main() {
             board.remove();
         }
         else if (command == "edit") {
+            int x, y, param1, param2 = 0;
+            std::string color, fillModeStr;
+
+            if (!(iss >> x >> y >> param1 >> param2 >> color >> fillModeStr)) {
+                std::cout << "Invalid parameters for edit command. Expected format: edit x y param1 param2 color fillMode"
+                          << std::endl;
+                continue;
+            }
+
+            board.edit(x, y, param1, param2, color, fillModeStr);
         }
 
         else if (command == "paint") {

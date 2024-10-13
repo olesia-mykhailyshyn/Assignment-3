@@ -77,7 +77,7 @@ void Board::add(const std::string& shapeName, const std::string& colorStr, int x
     }
     else {
         figures.emplace_back(shapeIDCounter, newFigure);
-        std::cout << "< [" << shapeIDCounter - 1 << "] " << shapeName << " " << color.getName()
+        std::cout << "< [" << shapeIDCounter << "] " << shapeName << " " << color.getName()
                   << " " << x << " " << y << " " << parameter1;
 
         if (shapeName == "rectangle" || shapeName == "line") {
@@ -260,9 +260,12 @@ void Board::save(const std::string& filePath) const {
             std::cout << "There are no figures. An empty file will be saved." << std::endl;
         }
         else {
-            for (const std::shared_ptr<Figure>& figure : getFigures()) {
+            for (const auto& figurePair : figures) {
+                int id = figurePair.first;
+                const auto& figure = figurePair.second;
                 if (figure != nullptr) {
-                    myFile << figure->getSaveFormat() << std::endl;
+                    // Save the ID with the figure
+                    myFile << id << " " << figure->getSaveFormat() << std::endl;
                 }
             }
             std::cout << "Figures saved to " << filePath << std::endl;
@@ -343,15 +346,28 @@ void Board::edit(int x, int y, int parameter1, int parameter2, const std::string
         return;
     }
 
-    auto& figure = figures[selectedID].second;
+    std::shared_ptr<Figure>& figure = figures[selectedID].second;
 
     figure->x = x;
     figure->y = y;
+
     if (auto rect = dynamic_cast<Rectangle*>(figure.get())) {
         rect->width = parameter1;
         rect->height = parameter2;
-    } else if (auto circ = dynamic_cast<Circle*>(figure.get())) {
+    }
+    else if (auto circ = dynamic_cast<Circle*>(figure.get())) {
         circ->radius = parameter1;
+    }
+    else if (auto tri = dynamic_cast<Triangle*>(figure.get())) {
+        tri->height = parameter1;
+    }
+    else if (auto line = dynamic_cast<Line*>(figure.get())) {
+        line->x2 = parameter1;
+        line->y2 = parameter2;
+    }
+    else {
+        std::cout << "Unknown figure type." << std::endl;
+        return;
     }
 
     ColorName colorName = Color::fromString(colorStr);
@@ -363,6 +379,7 @@ void Board::edit(int x, int y, int parameter1, int parameter2, const std::string
 
     std::cout << "Shape [" << selectedID << "] edited: New properties set." << std::endl;
 }
+
 
 void Board::paint(const std::string& colorStr) {
     if (selectedID == -1) {
