@@ -42,8 +42,7 @@ for (const auto& figurePair : figures) {
     return result;
 }
 
-void Board::add(const std::string& shapeName, const std::string& colorStr, int x, int y, int parameter1, int parameter2, FillMode fillMode) {
-    ColorName colorName = Color::fromString(colorStr);
+void Board::add(ShapeType shapeType, ColorName colorName, int x, int y, int param1, int param2, FillMode fillMode) {
     if (colorName == ColorName::Invalid) {
         std::cout << "Invalid color." << std::endl;
         return;
@@ -51,21 +50,22 @@ void Board::add(const std::string& shapeName, const std::string& colorStr, int x
     Color color(colorName);
     std::shared_ptr<Figure> newFigure = nullptr;
 
-    if (shapeName == "triangle") {
-        newFigure = std::make_shared<Triangle>(x, y, parameter1, color, fillMode);
-    }
-    else if (shapeName == "rectangle") {
-        newFigure = std::make_shared<Rectangle>(x, y, parameter1, parameter2, color, fillMode);
-    }
-    else if (shapeName == "circle") {
-        newFigure = std::make_shared<Circle>(x, y, parameter1, color, fillMode);
-    }
-    else if (shapeName == "line") {
-        newFigure = std::make_shared<Line>(x, y, parameter1, parameter2, color, fillMode);
-    }
-    else {
-        std::cout << "Invalid shape name." << std::endl;
-        return;
+    switch (shapeType) {
+        case ShapeType::Triangle:
+            newFigure = std::make_shared<Triangle>(x, y, param1, color, fillMode);
+            break;
+        case ShapeType::Rectangle:
+            newFigure = std::make_shared<Rectangle>(x, y, param1, param2, color, fillMode);
+            break;
+        case ShapeType::Circle:
+            newFigure = std::make_shared<Circle>(x, y, param1, color, fillMode);
+            break;
+        case ShapeType::Line:
+            newFigure = std::make_shared<Line>(x, y, param1, param2, color, fillMode);
+            break;
+        default:
+            std::cout << "Invalid shape type." << std::endl;
+            return;
     }
 
     if (isDuplicate(newFigure)) {
@@ -78,13 +78,13 @@ void Board::add(const std::string& shapeName, const std::string& colorStr, int x
     }
     else {
         figures.emplace_back(shapeIDCounter, newFigure);
-        std::cout << "[" << shapeIDCounter << "] " << shapeName << " " << color.getName()
-                  << " " << x << " " << y << " " << parameter1;
+        std::cout << "[" << shapeIDCounter << "] " << newFigure->getShapeType() << " " << color.getName()
+                  << " " << x << " " << y << " " << param1;
 
-        if (shapeName == "rectangle" || shapeName == "line") {
-            std::cout << " " << parameter2;
+        if (shapeType == ShapeType::Rectangle || shapeType == ShapeType::Line) {
+            std::cout << " " << param2;
         }
-
+        std::cout << std::endl;
         ++shapeIDCounter;
     }
 }
@@ -101,18 +101,18 @@ void Board::load(const std::string& filePath) {
         input.close();
         return;
     }
-    figures.clear();
 
     std::vector<std::pair<int, std::shared_ptr<Figure>>> tempFigures;
     std::vector<std::vector<std::string>> tempGrid = grid;
     grid.assign(boardHeight, std::vector<std::string>(boardWidth, " "));
 
     int id, x, y, param1, param2;
-    std::string fillModeStr, colorStr, shapeType;
+    std::string fillModeStr, colorStr, shapeTypeStr;
     bool loadSuccessful = true;
 
-    while (input >> id >> fillModeStr >> colorStr >> shapeType >> x >> y >> param1) {
+    while (input >> id >> fillModeStr >> colorStr >> shapeTypeStr >> x >> y >> param1) {
         FillMode fillMode = (fillModeStr == "fill") ? FillMode::Fill : FillMode::Frame;
+
         ColorName colorName = Color::fromString(colorStr);
         if (colorName == ColorName::Invalid) {
             std::cout << "Invalid color specified: " << colorStr << std::endl;
@@ -120,49 +120,71 @@ void Board::load(const std::string& filePath) {
             break;
         }
         Color color(colorName);
+
+        auto shapeTypeIt = shapeTypeMap.find(shapeTypeStr);
+        if (shapeTypeIt == shapeTypeMap.end()) {
+            std::cout << "Error: Invalid shape type " << shapeTypeStr << " found in file. Aborting load." << std::endl;
+            loadSuccessful = false;
+            break;
+        }
+        ShapeType shapeType = shapeTypeIt->second;
+
         std::shared_ptr<Figure> newFigure = nullptr;
 
-        if (shapeType == "triangle") {
-            newFigure = std::make_shared<Triangle>(x, y, param1, color, fillMode);
-        }
-        else if (shapeType == "rectangle" || shapeType == "line") {
-            if (!(input >> param2)) {
-                std::cout << "Missing parameters for shape " << shapeType << std::endl;
+        switch (shapeType) {
+            case ShapeType::Triangle:
+                newFigure = std::make_shared<Triangle>(x, y, param1, color, fillMode);
+                break;
+            case ShapeType::Rectangle:
+                if (!(input >> param2)) {
+                    std::cout << "Missing parameters for shape " << shapeTypeStr << std::endl;
+                    loadSuccessful = false;
+                    break;
+                }
+                newFigure = std::make_shared<Rectangle>(x, y, param1, param2, color, fillMode);
+                break;
+            case ShapeType::Circle:
+                if (param1 <= 0) {
+                    std::cout << "Invalid radius for circle." << std::endl;
+                    loadSuccessful = false;
+                    break;
+                }
+                newFigure = std::make_shared<Circle>(x, y, param1, color, fillMode);
+                break;
+            case ShapeType::Line:
+                if (!(input >> param2)) {
+                    std::cout << "Missing parameters for shape " << shapeTypeStr << std::endl;
+                    loadSuccessful = false;
+                    break;
+                }
+                newFigure = std::make_shared<Line>(x, y, param1, param2, color, fillMode);
+                break;
+            default:
+                std::cout << "Invalid shape type in file." << std::endl;
                 loadSuccessful = false;
                 break;
-            }
-            if (shapeType == "rectangle") {
-                newFigure = std::make_shared<Rectangle>(x, y, param1, param2, color, fillMode);
-            }
-            else {
-                newFigure = std::make_shared<Line>(x, y, param1, param2, color, fillMode);
-            }
         }
-        else if (shapeType == "circle") {
-            newFigure = std::make_shared<Circle>(x, y, param1, color, fillMode);
-        }
-        else {
-            std::cout << "Error: Invalid shape type " << shapeType << " found in file. Aborting load." << std::endl;
-            loadSuccessful = false;
+
+        if (!loadSuccessful) {
             break;
         }
 
         if (newFigure->isOutOfBounds(boardWidth, boardHeight)) {
-            std::cout << "Error: Figure " << newFigure->getInfo() << " is too large to fit on the board." << std::endl;
+            std::cout << "Error: Figure is out of bounds." << std::endl;
             loadSuccessful = false;
             break;
         }
 
         if (!isDuplicate(newFigure)) {
-            figures.emplace_back(shapeIDCounter, newFigure);
+            tempFigures.emplace_back(id, newFigure);
         }
         else {
-            std::cout << "Error: Duplicate figure found in file. Aborting load." << std::endl;
+            std::cout << "Error: Duplicate figure found." << std::endl;
             loadSuccessful = false;
             break;
         }
 
-        tempFigures.emplace_back(id, newFigure);
+        shapeIDCounter = std::max(shapeIDCounter, id + 1);
     }
 
     input.close();
@@ -170,11 +192,12 @@ void Board::load(const std::string& filePath) {
     if (loadSuccessful) {
         figures.swap(tempFigures);
         std::cout << "Figures loaded successfully from " << filePath << std::endl;
-    } else {
-        grid.swap(tempGrid);
-        std::cout << "Failed to load file: " << filePath << ". Aborting load due to errors." << std::endl;
+    }
+    else {
+        std::cout << "Failed to load file. Board was not modified." << std::endl;
     }
 }
+
 
 bool Board::isDuplicate(const std::shared_ptr<Figure>& figure) const {
     for (const auto& existingFigure : figures) {

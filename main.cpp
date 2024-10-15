@@ -32,24 +32,33 @@ int main() {
                     break;
                 }
                 case CommandType::Add: {
-                    std::string fillModeStr, color, shapeName;
+                    std::string fillModeStr, colorStr, shapeNameStr;
                     int x, y, param1, param2 = 0;
-                    iss >> fillModeStr >> color >> shapeName >> x >> y >> param1;
+                    iss >> fillModeStr >> colorStr >> shapeNameStr >> x >> y >> param1;
 
-                    auto shapeTypeIt = shapeTypeMap.find(shapeName);
+                    auto shapeTypeIt = shapeTypeMap.find(shapeNameStr);
                     if (shapeTypeIt == shapeTypeMap.end()) {
                         std::cout << "Invalid shape type." << std::endl;
                         continue;
                     }
                     ShapeType shapeType = shapeTypeIt->second;
+
                     if (shapeType == ShapeType::Rectangle || shapeType == ShapeType::Line) {
                         if (!(iss >> param2)) {
-                            std::cout << "Invalid parameters for " << shapeName << ". Needs an additional parameter." << std::endl;
+                            std::cout << "Invalid parameters for " << shapeNameStr << ". Needs an additional parameter." << std::endl;
                             continue;
                         }
                     }
+
                     FillMode fillMode = (fillModeStr == "fill") ? FillMode::Fill : FillMode::Frame;
-                    board.add(shapeName, color, x, y, param1, param2, fillMode);
+
+                    ColorName color = Color::fromString(colorStr);
+                    if (color == ColorName::Invalid) {
+                        std::cout << "Invalid color." << std::endl;
+                        continue;
+                    }
+
+                    board.add(shapeType, color, x, y, param1, param2, fillMode);
                     break;
                 }
                 case CommandType::Clear: {

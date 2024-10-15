@@ -3,6 +3,7 @@
 #include <iostream>
 #include "figure.h"
 #include <memory>
+#include "enums.h"
 
 class Board {
 public:
@@ -15,7 +16,7 @@ public:
     void draw();
     void list() const;
     static void shapes();
-    void add(const std::string& shapeName, const std::string& colorStr, int x, int y, int parameter1, int parameter2, FillMode fillMode);
+    void add(ShapeType shapeType, ColorName color, int x, int y, int parameter1, int parameter2, FillMode fillMode);
     //void undo();
     void clear(const std::string& filePath);
     void save(const std::string& filePath) const;
